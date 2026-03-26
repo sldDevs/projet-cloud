@@ -1,4 +1,4 @@
-# Projet de Fin de Module : Architecture Réseau 3-Tiers sur OpenShift Virtualization
+# Projet de Fin de Module: Architecture Réseau 3-Tiers sur OpenShift Virtualization
 
 Ce dépôt contient l'Infrastructure as Code (IaC) d'une architecture réseau sécurisée déployée automatiquement sur Red Hat OpenShift via GitHub Actions.
 
