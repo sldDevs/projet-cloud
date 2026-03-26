@@ -14,7 +14,7 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 5Gi # Espace pour stocker l'ISO compressé et décompressé
+        storage: 1Gi # Espace pour stocker l'ISO compressé et décompressé
     # StorageClass par défaut du cluster (laisser vide ou spécifier si nécessaire)
     # storageClassName: ocs-storagecluster-ceph-rbd 
 ---
@@ -70,7 +70,7 @@ spec:
       volumes:
         - name: disque-dur
           emptyDisk:
-            capacity: 20Gi # Disque de 20Go pour installer le système
+            capacity: 1Gi # Disque de 20Go pour installer le système
         - name: cdrom-iso
           dataVolume:
             name: iso-pfsense # Référence au DataVolume ci-dessus
