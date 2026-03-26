@@ -14,20 +14,10 @@ jobs:
         run: |
           oc login --token=${{ secrets.OC_TOKEN }} --server=${{ secrets.OC_SERVER }} --insecure-skip-tls-verify=true
           oc project saliou-diop-dev
-<<<<<<< HEAD
       - name: Déploiement Réseau
         run: |
           # On ignore les NAD si le Sandbox les bloque, mais on applique la politique
           rm -f reseau/nad-dmz.yaml reseau/nad-lan.yaml || true
-=======
-
-      # 4. Application des configurations Réseau (sans les NAD)
-      - name: Déploiement du Réseau (NetworkPolicy uniquement)
-        run: |
-          echo "🌐 Application des politiques de sécurité..."
-          # 🚨 ASTUCE : On efface les fichiers NAD du runner GitHub pour éviter l'erreur de permissions
-          rm -f reseau/nad-dmz.yaml reseau/nad-lan.yaml
->>>>>>> 828a7fe410260a99ce8835b7236a80bfc39c70ca
           oc apply -f reseau/
       - name: Déploiement Conteneur Web
         run: oc apply -f conteneur/
