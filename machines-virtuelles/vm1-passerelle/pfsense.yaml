@@ -1,0 +1,76 @@
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: iso-pfsense
+  namespace: sld07-dev
+spec:
+  source:
+    http:
+      # URL Officielle de l'ISO pfSense (à adapter selon la version actuelle)
+      url: "https://nyifiles.pfsense.org/mirror/downloads/pfSense-CE-2.7.2-RELEASE-amd64.iso.gz"
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi # Espace pour stocker l'ISO compressé et décompressé
+    # StorageClass par défaut du cluster (laisser vide ou spécifier si nécessaire)
+    # storageClassName: ocs-storagecluster-ceph-rbd 
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: vm1-pfsense
+  namespace: sld07-dev
+  labels:
+    kubevirt.io/vm: vm1-pfsense
+spec:
+  running: false # La VM ne démarre pas automatiquement après création
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: vm1-pfsense
+    spec:
+      domain:
+        devices:
+          disks:
+            # 1. Le disque dur de boot (vide, pour l'installation)
+            - name: disque-dur
+              disk:
+                bus: virtio
+            # 2. L'ISO pfSense (le lecteur CD-ROM)
+            - name: cdrom-iso
+              cdrom:
+                bus: sata
+                bootOrder: 1 # On boote sur le CD en premier
+          interfaces:
+            # Interface 1 : WAN (connecté au réseau par défaut de Kubernetes/NAT)
+            - name: wan
+              masquerade: {}
+            # Interface 2 : LAN
+            - name: lan
+              bridge: {}
+            # Interface 3 : DMZ
+            - name: dmz
+              bridge: {}
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 2
+      networks:
+        - name: wan
+          pod: {}
+        - name: lan
+          multus:
+            networkName: sld07-dev/reseau-lan # Référence au NAD créé précédemment
+        - name: dmz
+          multus:
+            networkName: sld07-dev/reseau-dmz # Référence au NAD créé précédemment
+      volumes:
+        - name: disque-dur
+          emptyDisk:
+            capacity: 20Gi # Disque de 20Go pour installer le système
+        - name: cdrom-iso
+          dataVolume:
+            name: iso-pfsense # Référence au DataVolume ci-dessus

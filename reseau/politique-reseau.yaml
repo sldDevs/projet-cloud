@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: isolation-bdd
+  namespace: sld07-dev
+spec:
+  # On applique cette règle sur les pods qui font tourner la VM de base de données
+  podSelector:
+    matchLabels:
+      vm.kubevirt.io/name: vm3-serveur-bdd
+  policyTypes:
+    - Ingress
+  ingress:
+    # On autorise UNIQUEMENT le trafic venant de la VM Serveur Web
+    - from:
+        - podSelector:
+            matchLabels:
+              vm.kubevirt.io/name: vm2-serveur-web
+      ports:
+        - protocol: TCP
+          port: 3306
