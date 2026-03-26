@@ -1,18 +1,5 @@
 apiVersion: cdi.kubevirt.io/v1beta1
-kind: DataVolume
-metadata:
-  name: image-fedora-firewall
-  namespace: saliou-diop-dev
-spec:
-  source:
-    http:
-      url: "https://download.fedoraproject.org/pub/fedora/linux/releases/39/Cloud/x86_64/images/Fedora-Cloud-Base-39-1.5.x86_64.qcow2"
-  pvc:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 5Gi
+# ... (Garde la partie DataVolume identique)
 ---
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
@@ -36,20 +23,17 @@ spec:
               disk:
                 bus: virtio
           interfaces:
-            - name: wan
+            # On utilise une seule interface standard
+            - name: default
               masquerade: {}
-            - name: lan
-              bridge: {}
         resources:
           requests:
             memory: 1Gi
             cpu: 1
       networks:
-        - name: wan
+        # Connecté au réseau par défaut d'OpenShift
+        - name: default
           pod: {}
-        - name: lan
-          multus:
-            networkName: saliou-diop-dev/reseau-lan
       volumes:
         - name: boot
           dataVolume:
@@ -63,8 +47,4 @@ spec:
               password: "Password123!"
               chpasswd: { expire: False }
               ssh_pwauth: True
-              runcmd:
-                - nmcli connection add type ethernet ifname eth1 con-name lan ipv4.method manual ipv4.addresses 192.168.10.254/24
-                - nmcli connection up lan
-                - echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
-                - sysctl -p
+              # On laisse le DHCP d'OpenShift faire son travail, plus de runcmd nmcli !
