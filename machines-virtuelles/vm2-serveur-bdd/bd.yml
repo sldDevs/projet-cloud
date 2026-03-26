@@ -1,5 +1,18 @@
 apiVersion: cdi.kubevirt.io/v1beta1
-# ... (Garde la partie DataVolume identique)
+kind: DataVolume
+metadata:
+  name: image-fedora-bdd
+  namespace: saliou-diop-dev
+spec:
+  source:
+    http:
+      url: "https://download.fedoraproject.org/pub/fedora/linux/releases/39/Cloud/x86_64/images/Fedora-Cloud-Base-39-1.5.x86_64.qcow2"
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi
 ---
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
@@ -54,5 +67,4 @@ spec:
               packages:
                 - mariadb-server
               runcmd:
-                # Démarrage de MariaDB uniquement
                 - systemctl enable --now mariadb
