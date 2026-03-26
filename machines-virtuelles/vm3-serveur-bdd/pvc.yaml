@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: bdd-donnees-mysql
-  namespace: sld07-dev
+  namespace: saliou-diop-dev
 spec:
   accessModes:
     - ReadWriteOnce

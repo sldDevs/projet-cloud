@@ -3,7 +3,7 @@ apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
 metadata:
   name: iso-pfsense
-  namespace: sld07-dev
+  namespace: saliou-diop-dev
 spec:
   source:
     http:
@@ -22,7 +22,7 @@ apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   name: vm1-pfsense
-  namespace: sld07-dev
+  namespace: saliou-diop-dev
   labels:
     kubevirt.io/vm: vm1-pfsense
 spec:
@@ -63,10 +63,10 @@ spec:
           pod: {}
         - name: lan
           multus:
-            networkName: sld07-dev/reseau-lan # Référence au NAD créé précédemment
+            networkName: saliou-diop-dev/reseau-lan # Référence au NAD créé précédemment
         - name: dmz
           multus:
-            networkName: sld07-dev/reseau-dmz # Référence au NAD créé précédemment
+            networkName: saliou-diop-dev/reseau-dmz # Référence au NAD créé précédemment
       volumes:
         - name: disque-dur
           emptyDisk:

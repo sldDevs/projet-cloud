@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: isolation-bdd
-  namespace: sld07-dev
+  namespace: saliou-diop-dev
 spec:
   # On applique cette règle sur les pods qui font tourner la VM de base de données
   podSelector:

@@ -3,7 +3,7 @@ apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
 metadata:
   name: image-ubuntu-web
-  namespace: sld07-dev
+  namespace: saliou-diop-dev
 spec:
   source:
     http:
@@ -20,7 +20,7 @@ apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   name: vm2-serveur-web
-  namespace: sld07-dev
+  namespace: saliou-diop-dev
   labels:
     kubevirt.io/vm: vm2-serveur-web
 spec:
@@ -50,7 +50,7 @@ spec:
       networks:
         - name: dmz
           multus:
-            networkName: sld07-dev/reseau-dmz
+            networkName: saliou-diop-dev/reseau-dmz
       volumes:
         - name: boot
           dataVolume:

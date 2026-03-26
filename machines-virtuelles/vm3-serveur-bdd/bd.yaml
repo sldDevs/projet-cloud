@@ -3,7 +3,7 @@ apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
 metadata:
   name: image-ubuntu-bdd
-  namespace: sld07-dev
+  namespace: saliou-diop-dev
 spec:
   source:
     http:
@@ -19,7 +19,7 @@ apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   name: vm3-serveur-bdd
-  namespace: sld07-dev
+  namespace: saliou-diop-dev
   annotations:
     kubevirt.io/allow-ssh-key-injection: "false"
   labels:
@@ -55,7 +55,7 @@ spec:
       networks:
         - name: lan
           multus:
-            networkName: sld07-dev/reseau-lan
+            networkName: saliou-diop-dev/reseau-lan
       volumes:
         - name: boot
           dataVolume:

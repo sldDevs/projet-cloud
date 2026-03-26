@@ -26,7 +26,7 @@ jobs:
         run: |
           oc login --token=${{ secrets.OC_TOKEN }} --server=${{ secrets.OC_SERVER }} --insecure-skip-tls-verify=true
           # Remplacer 'mon-projet' par le nom exact de ton namespace sur OpenShift
-          oc project sld07-dev
+          oc project saliou-diop-dev
 
       # 4. Application des configurations Réseau en premier
       - name: Déploiement du Réseau (NAD et NetworkPolicy)
