@@ -37,7 +37,7 @@ spec:
             - name: boot
               disk:
                 bus: virtio
-            - name: cloudinit
+            - name: cloudinitdisk
               disk:
                 bus: virtio
             # Montage du PVC de données séparé
@@ -64,7 +64,7 @@ spec:
           persistentVolumeClaim:
             claimName: bdd-donnees-mysql # Référence au PVC créé ci-dessus
         # --- CONFIGURATION AUTOMATIQUE (CLOUD-INIT) ---
-        - name: cloudinit
+        - name: cloudinitdisk
           cloudInitNoCloud:
             userData: |
               #cloud-config
