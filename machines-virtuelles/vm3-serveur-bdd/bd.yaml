@@ -20,6 +20,8 @@ kind: VirtualMachine
 metadata:
   name: vm3-serveur-bdd
   namespace: sld07-dev
+  annotations:
+    kubevirt.io/allow-ssh-key-injection: "false"
   labels:
     kubevirt.io/vm: vm3-serveur-bdd
 spec:
