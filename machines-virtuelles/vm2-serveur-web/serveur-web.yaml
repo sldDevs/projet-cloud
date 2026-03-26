@@ -24,7 +24,7 @@ metadata:
   labels:
     kubevirt.io/vm: vm2-serveur-web
 spec:
-  running: true
+  runStrategy: Always
   template:
     metadata:
       labels:
@@ -36,7 +36,7 @@ spec:
             - name: boot
               disk:
                 bus: virtio
-            - name: cloudinit
+            - name: cloudinitdisk
               disk:
                 bus: virtio
           interfaces:
@@ -56,18 +56,18 @@ spec:
           dataVolume:
             name: image-ubuntu-web
         # --- CONFIGURATION AUTOMATIQUE (CLOUD-INIT) ---
-        - name: cloudinit
+        - name: cloudinitdisk
           cloudInitNoCloud:
             userData: |
               #cloud-config
               hostname: vm2-web
-              users:
-                - name: ubuntu
-                  sudo: ALL=(ALL) NOPASSWD:ALL
-                  shell: /bin/bash
-                  # 🔴 REMPLACE CECI PAR TA VRAIE CLÉ SSH PUBLIQUE
-                  ssh_authorized_keys:
-                    - ssh-rsa AAAAB3Nza...votre_cle_publique... utilisateur@pc
+              user: ubuntu
+              password: "Password123!"
+              chpasswd: { expire: False }
+              ssh_pwauth: True
+              # 🔴 REMPLACE CECI PAR TA VRAIE CLÉ SSH PUBLIQUE SI BESOIN
+              ssh_authorized_keys:
+                - ssh-rsa AAAAB3Nza...votre_cle_publique... utilisateur@pc
               package_update: true
               package_upgrade: true
               packages:
