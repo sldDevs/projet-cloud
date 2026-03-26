@@ -25,13 +25,14 @@ jobs:
       - name: Connexion au Cluster OpenShift
         run: |
           oc login --token=${{ secrets.OC_TOKEN }} --server=${{ secrets.OC_SERVER }} --insecure-skip-tls-verify=true
-          # Remplacer 'mon-projet' par le nom exact de ton namespace sur OpenShift
           oc project saliou-diop-dev
 
-      # 4. Application des configurations Réseau en premier
-      - name: Déploiement du Réseau (NAD et NetworkPolicy)
+      # 4. Application des configurations Réseau (sans les NAD)
+      - name: Déploiement du Réseau (NetworkPolicy uniquement)
         run: |
-          echo "🌐 Application des réseaux et politiques de sécurité..."
+          echo "🌐 Application des politiques de sécurité..."
+          # 🚨 ASTUCE : On efface les fichiers NAD du runner GitHub pour éviter l'erreur de permissions
+          rm -f reseau/nad-dmz.yaml reseau/nad-lan.yaml
           oc apply -f reseau/
 
       # 5. Application des VMs dans un ordre précis (DB -> Web -> Firewall)
