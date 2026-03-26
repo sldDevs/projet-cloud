@@ -16,8 +16,8 @@ jobs:
           oc project saliou-diop-dev
       - name: Déploiement Réseau
         run: |
-          # On ignore les NAD si le Sandbox les bloque, mais on applique la politique
-          rm -f reseau/nad-dmz.yaml reseau/nad-lan.yaml || true
+          echo "🌐 Application des politiques de sécurité..."
+          rm -f reseau/nad-*.yml reseau/nad-*.yaml || true
           oc apply -f reseau/
       - name: Déploiement Conteneur Web
         run: oc apply -f conteneur/
