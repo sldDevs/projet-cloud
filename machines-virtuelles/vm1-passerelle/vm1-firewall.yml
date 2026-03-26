@@ -20,7 +20,7 @@ metadata:
   name: vm1-firewall
   namespace: saliou-diop-dev
 spec:
-  runStrategy: Always
+  runStrategy: Manual
   template:
     metadata:
       labels:

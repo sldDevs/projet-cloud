@@ -20,7 +20,7 @@ metadata:
   name: vm2-serveur-bdd
   namespace: saliou-diop-dev
 spec:
-  runStrategy: Always
+  runStrategy: Manual
   template:
     metadata:
       labels:
