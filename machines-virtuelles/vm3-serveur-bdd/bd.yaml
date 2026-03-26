@@ -25,7 +25,7 @@ metadata:
   labels:
     kubevirt.io/vm: vm3-serveur-bdd
 spec:
-  runStrategy: Always  # ✅ CORRECTION ICI : Remplace "running: true"
+  runStrategy: Always
   template:
     metadata:
       labels:
@@ -40,12 +40,10 @@ spec:
             - name: cloudinitdisk
               disk:
                 bus: virtio
-            # Montage du PVC de données séparé
             - name: mysql-data
               disk:
                 bus: virtio
           interfaces:
-            # Unique interface : connectée au LAN
             - name: lan
               bridge: {}
         resources:
@@ -62,20 +60,23 @@ spec:
             name: image-ubuntu-bdd
         - name: mysql-data
           persistentVolumeClaim:
-            claimName: bdd-donnees-mysql # Référence au PVC créé ci-dessus
+            claimName: bdd-donnees-mysql
         # --- CONFIGURATION AUTOMATIQUE (CLOUD-INIT) ---
         - name: cloudinitdisk
           cloudInitNoCloud:
-            userData: |
+            userData: |-
               #cloud-config
               hostname: vm3-db
-              users:
-                - name: ubuntu
-                  sudo: ALL=(ALL) NOPASSWD:ALL
-                  shell: /bin/bash
-                  # 🔴 REMPLACE CECI PAR TA VRAIE CLÉ SSH PUBLIQUE
-                  ssh_authorized_keys:
-                    - ssh-rsa AAAAB3Nza...votre_cle_publique... utilisateur@pc
+              
+              # ✅ CORRECTION ICI : Syntaxe exigée par le Sandbox Red Hat
+              user: ubuntu
+              password: "Password123!"
+              chpasswd: { expire: False }
+              ssh_pwauth: True
+              # 🔴 REMPLACE CECI PAR TA VRAIE CLÉ SSH PUBLIQUE SI BESOIN
+              ssh_authorized_keys:
+                - ssh-rsa AAAAB3Nza...votre_cle_publique... utilisateur@pc
+              
               package_update: true
               package_upgrade: true
               packages:
@@ -90,26 +91,24 @@ spec:
                       eth0:
                         dhcp4: no
                         addresses: [192.168.10.10/24]
-                        gateway4: 192.168.10.254 # pfSense est la passerelle
+                        gateway4: 192.168.10.254
                         nameservers:
                           addresses: [8.8.8.8, 8.8.4.4]
                   EOF
                   netplan apply
                 # 2. Préparation du disque de données MySQL (PVC)
-                - mkfs.ext4 /dev/vdb # Formate le second disque
+                - mkfs.ext4 /dev/vdb
                 - mkdir -p /mnt/mysql-data
                 - mount /dev/vdb /mnt/mysql-data
                 - systemctl stop mysql
-                - cp -rp /var/lib/mysql/* /mnt/mysql-data/ # Copie les données par défaut
+                - cp -rp /var/lib/mysql/* /mnt/mysql-data/
                 - rm -rf /var/lib/mysql
-                - ln -s /mnt/mysql-data /var/lib/mysql # Crée un lien symbolique
+                - ln -s /mnt/mysql-data /var/lib/mysql
                 - chown -R mysql:mysql /mnt/mysql-data
                 - systemctl start mysql
                 # 3. Configuration MySQL
-                # Autoriser MySQL à écouter sur toutes les interfaces
                 - sed -i "s/bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/mysql.conf.d/mysqld.cnf
                 - systemctl restart mysql
-                # Création de la base et de l'utilisateur (Sécuriser le mot de passe en prod !)
                 - mysql -e "CREATE DATABASE IF NOT EXISTS appdb;"
                 - mysql -e "CREATE USER IF NOT EXISTS 'appuser'@'192.168.10.%' IDENTIFIED BY 'votre_mot_de_passe_securise';"
                 - mysql -e "GRANT ALL PRIVILEGES ON appdb.* TO 'appuser'@'192.168.10.%';"
