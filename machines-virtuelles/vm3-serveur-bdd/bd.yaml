@@ -1,0 +1,115 @@
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: image-ubuntu-bdd
+  namespace: saliou-diop-dev
+spec:
+  source:
+    http:
+      url: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: vm3-serveur-bdd
+  namespace: saliou-diop-dev
+  annotations:
+    kubevirt.io/allow-ssh-key-injection: "false"
+  labels:
+    kubevirt.io/vm: vm3-serveur-bdd
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: vm3-serveur-bdd
+    spec:
+      domain:
+        devices:
+          disks:
+            - name: boot
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+            - name: mysql-data
+              disk:
+                bus: virtio
+          interfaces:
+            - name: lan
+              bridge: {}
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 2
+      networks:
+        - name: lan
+          multus:
+            networkName: saliou-diop-dev/reseau-lan
+      volumes:
+        - name: boot
+          dataVolume:
+            name: image-ubuntu-bdd
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: bdd-donnees-mysql
+        # --- CONFIGURATION AUTOMATIQUE (CLOUD-INIT) ---
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |-
+              #cloud-config
+              hostname: vm3-db
+              
+              # ✅ CORRECTION ICI : Syntaxe exigée par le Sandbox Red Hat
+              user: ubuntu
+              password: "Password123!"
+              chpasswd: { expire: False }
+              ssh_pwauth: True
+              # 🔴 REMPLACE CECI PAR TA VRAIE CLÉ SSH PUBLIQUE SI BESOIN
+              ssh_authorized_keys:
+                - ssh-rsa AAAAB3Nza...votre_cle_publique... utilisateur@pc
+              
+              package_update: true
+              package_upgrade: true
+              packages:
+                - mysql-server
+              runcmd:
+                # 1. Configuration réseau statique pour le LAN
+                - |
+                  cat <<EOF > /etc/netplan/50-cloud-init.yaml
+                  network:
+                    version: 2
+                    ethernets:
+                      eth0:
+                        dhcp4: no
+                        addresses: [192.168.10.10/24]
+                        gateway4: 192.168.10.254
+                        nameservers:
+                          addresses: [8.8.8.8, 8.8.4.4]
+                  EOF
+                  netplan apply
+                # 2. Préparation du disque de données MySQL (PVC)
+                - mkfs.ext4 /dev/vdb
+                - mkdir -p /mnt/mysql-data
+                - mount /dev/vdb /mnt/mysql-data
+                - systemctl stop mysql
+                - cp -rp /var/lib/mysql/* /mnt/mysql-data/
+                - rm -rf /var/lib/mysql
+                - ln -s /mnt/mysql-data /var/lib/mysql
+                - chown -R mysql:mysql /mnt/mysql-data
+                - systemctl start mysql
+                # 3. Configuration MySQL
+                - sed -i "s/bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/mysql.conf.d/mysqld.cnf
+                - systemctl restart mysql
+                - mysql -e "CREATE DATABASE IF NOT EXISTS appdb;"
+                - mysql -e "CREATE USER IF NOT EXISTS 'appuser'@'192.168.10.%' IDENTIFIED BY 'votre_mot_de_passe_securise';"
+                - mysql -e "GRANT ALL PRIVILEGES ON appdb.* TO 'appuser'@'192.168.10.%';"
+                - mysql -e "FLUSH PRIVILEGES;"
