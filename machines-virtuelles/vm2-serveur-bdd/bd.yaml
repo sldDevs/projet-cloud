@@ -1,0 +1,73 @@
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: image-fedora-bdd
+  namespace: saliou-diop-dev
+spec:
+  source:
+    http:
+      url: "https://download.fedoraproject.org/pub/fedora/linux/releases/39/Cloud/x86_64/images/Fedora-Cloud-Base-39-1.5.x86_64.qcow2"
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: vm2-serveur-bdd
+  namespace: saliou-diop-dev
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: vm2-serveur-bdd
+    spec:
+      domain:
+        devices:
+          disks:
+            - name: boot
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+            - name: mysql-data
+              disk:
+                bus: virtio
+          interfaces:
+            - name: lan
+              bridge: {}
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 2
+      networks:
+        - name: lan
+          multus:
+            networkName: saliou-diop-dev/reseau-lan
+      volumes:
+        - name: boot
+          dataVolume:
+            name: image-fedora-bdd
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: bdd-donnees-mysql
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              hostname: serveur-bdd
+              user: fedora
+              password: "Password123!"
+              chpasswd: { expire: False }
+              ssh_pwauth: True
+              packages:
+                - mariadb-server
+              runcmd:
+                - nmcli connection modify "Wired connection 1" ipv4.method manual ipv4.addresses 192.168.10.10/24 ipv4.gateway 192.168.10.254 ipv4.dns "8.8.8.8 8.8.4.4" connection.id eth0
+                - nmcli connection up eth0
+                - systemctl enable --now mariadb

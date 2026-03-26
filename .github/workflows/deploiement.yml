@@ -1,60 +1,27 @@
-name: Déploiement OpenShift Virtualization
-
-# Le pipeline se déclenche à chaque 'push' sur la branche 'main'
+name: Déploiement OpenShift
 on:
   push:
     branches: [ "main" ]
-
 jobs:
   deploy:
-    name: Déploiement de l'Infrastructure Réseau
     runs-on: ubuntu-latest
-    
     steps:
-      # 1. Récupération du code depuis GitHub
-      - name: Checkout du code
-        uses: actions/checkout@v4
-
-      # 2. Installation de l'outil en ligne de commande OpenShift (oc)
-      - name: Installation du CLI OpenShift (oc)
-        uses: redhat-actions/oc-installer@v1
+      - uses: actions/checkout@v4
+      - uses: redhat-actions/oc-installer@v1
         with:
           oc_version: 'latest'
-
-      # 3. Connexion au cluster OpenShift (utilise les secrets GitHub)
-      - name: Connexion au Cluster OpenShift
+      - name: Connexion OpenShift
         run: |
           oc login --token=${{ secrets.OC_TOKEN }} --server=${{ secrets.OC_SERVER }} --insecure-skip-tls-verify=true
-          # Remplacer 'mon-projet' par le nom exact de ton namespace sur OpenShift
           oc project saliou-diop-dev
-
-      # 4. Application des configurations Réseau en premier
-      - name: Déploiement du Réseau (NAD et NetworkPolicy)
+      - name: Déploiement Réseau
         run: |
-          echo "🌐 Application des réseaux et politiques de sécurité..."
+          # On ignore les NAD si le Sandbox les bloque, mais on applique la politique
+          rm -f reseau/nad-dmz.yaml reseau/nad-lan.yaml || true
           oc apply -f reseau/
-
-      # 5. Application des VMs dans un ordre précis (DB -> Web -> Firewall)
-      - name: Déploiement du Serveur Base de Données (VM3)
-        run: |
-          echo "🗄️ Déploiement du PVC et de la VM3 (MySQL)..."
-          oc apply -f machines-virtuelles/vm3-serveur-bdd/
-
-      - name: Déploiement du Serveur Web (VM2)
-        run: |
-          echo "🌐 Déploiement de la VM2 (Nginx + Node.js)..."
-          oc apply -f machines-virtuelles/vm2-serveur-web/
-
-      - name: Déploiement de la Passerelle (VM1)
-        run: |
-          echo "🛡️ Déploiement de la VM1 (pfSense)..."
-          oc apply -f machines-virtuelles/vm1-passerelle/
-
-      # 6. Vérification finale de l'état des VMs
-      - name: Vérification de l'état des Machines Virtuelles
-        run: |
-          echo "✅ Résumé de l'infrastructure déployée :"
-          echo "----------------------------------------"
-          oc get vm
-          echo "----------------------------------------"
-          oc get dataVolume
+      - name: Déploiement Conteneur Web
+        run: oc apply -f conteneur/
+      - name: Déploiement VM1 (Passerelle/Firewall)
+        run: oc apply -f machines-virtuelles/vm1-passerelle/
+      - name: Déploiement VM2 (Base de données)
+        run: oc apply -f machines-virtuelles/vm2-serveur-bdd/

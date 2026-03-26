@@ -9,4 +9,3 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  # StorageClass par défaut recommandé, ou spécifier (ex: ceph-rbd)
