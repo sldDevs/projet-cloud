@@ -25,7 +25,7 @@ metadata:
   labels:
     kubevirt.io/vm: vm3-serveur-bdd
 spec:
-  running: true
+  runStrategy: Always  # ✅ CORRECTION ICI : Remplace "running: true"
   template:
     metadata:
       labels:
