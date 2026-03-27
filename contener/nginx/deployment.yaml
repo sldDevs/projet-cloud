@@ -19,11 +19,10 @@ spec:
           ports:
             - containerPort: 8080
           volumeMounts:
-            # On monte la page HTML dans le dossier /app
+            # CORRECTIF : On monte tout le volume directement sur le dossier /app
             - name: web-content
-              mountPath: /app/index.html
-              subPath: index.html
-            # On monte la configuration Nginx au bon endroit pour Bitnami
+              mountPath: /app
+            # On laisse le fichier de configuration Nginx à sa place
             - name: web-content
               mountPath: /opt/bitnami/nginx/conf/server_blocks/my_server.conf
               subPath: my_server.conf
