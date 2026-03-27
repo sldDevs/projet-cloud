@@ -1,19 +1,3 @@
-apiVersion: cdi.kubevirt.io/v1beta1
-kind: DataVolume
-metadata:
-  name: image-fedora-firewall
-  namespace: saliou-diop-dev
-spec:
-  source:
-    http:
-      url: "https://download.fedoraproject.org/pub/fedora/linux/releases/39/Cloud/x86_64/images/Fedora-Cloud-Base-39-1.5.x86_64.qcow2"
-  pvc:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 2Gi
----
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
@@ -21,30 +5,49 @@ metadata:
   namespace: saliou-diop-dev
 spec:
   runStrategy: Manual
+  dataVolumeTemplates:
+    - metadata:
+        name: image-fedora-firewall
+      spec:
+        sourceRef:
+          kind: DataSource
+          name: fedora
+          namespace: openshift-virtualization-os-images
+        storage:
+          resources:
+            requests:
+              # On garde 5Gi pour ne pas exploser ton quota Sandbox
+              storage: 5Gi 
   template:
     metadata:
       labels:
         kubevirt.io/vm: vm1-firewall
     spec:
       domain:
+        cpu:
+          cores: 1
+        memory:
+          guest: 1Gi
         devices:
           disks:
             - name: boot
               disk:
                 bus: virtio
+              bootOrder: 1
             - name: cloudinitdisk
               disk:
                 bus: virtio
           interfaces:
             - name: default
               masquerade: {}
-        resources:
-          requests:
-            memory: 1Gi
-            cpu: 1
       networks:
         - name: default
           pod: {}
+      tolerations:
+        # Cette règle est souvent obligatoire sur OpenShift Sandbox
+        - effect: NoSchedule
+          key: sandbox-cnv
+          operator: Exists
       volumes:
         - name: boot
           dataVolume:
