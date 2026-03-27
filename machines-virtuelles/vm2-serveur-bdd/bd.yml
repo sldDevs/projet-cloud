@@ -4,7 +4,7 @@ metadata:
   name: vm2-serveur-bdd
   namespace: saliou-diop-dev
 spec:
-  runStrategy: Manual
+  runStrategy: Always
   dataVolumeTemplates:
     - metadata:
         name: image-fedora-bdd
