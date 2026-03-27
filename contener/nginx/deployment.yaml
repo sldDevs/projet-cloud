@@ -14,33 +14,20 @@ spec:
         app: nginx-web
     spec:
       containers:
-        - name: nodejs-app
-          image: image-registry.openshift-image-registry.svc:5000/openshift/nodejs:18-ubi8
-          # CORRECTIF : installation forcée des modules manquants
-          command: ["sh", "-c", "npm install express mysql2 && echo \"$APP_JS\" > app.js && node app.js"]
-          env:
-            - name: DB_HOST
-              value: "vm2-mysql-service"
-            - name: DB_USER
-              value: "appuser"
-            - name: DB_PASSWORD
-              value: "AppPass123!"
-            - name: DB_NAME
-              value: "appdb"
-            - name: APP_JS
-              valueFrom:
-                configMapKeyRef:
-                  name: nginx-config
-                  key: app.js
         - name: nginx
-          image: bitnami/nginx:latest # CORRECTIF : Image sans erreur de permission
+          image: bitnami/nginx:latest
           ports:
             - containerPort: 8080
           volumeMounts:
-            - name: app-config
+            # On monte la page HTML dans le dossier /app
+            - name: web-content
+              mountPath: /app/index.html
+              subPath: index.html
+            # On monte la configuration Nginx au bon endroit pour Bitnami
+            - name: web-content
               mountPath: /opt/bitnami/nginx/conf/server_blocks/my_server.conf
-              subPath: nginx.conf
+              subPath: my_server.conf
       volumes:
-        - name: app-config
+        - name: web-content
           configMap:
             name: nginx-config

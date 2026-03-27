@@ -4,34 +4,33 @@ metadata:
   name: nginx-config
   namespace: saliou-diop-dev
 data:
-  # 1. Le code de ton application Node.js
-  app.js: |
-    const express = require('express');
-    const mysql = require('mysql2');
-    const app = express();
-    const port = 3000;
+  # 1. Le code HTML de ton site vitrine
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Mon Site Vitrine</title>
+        <style>
+            body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+            h1 { color: #0066cc; }
+        </style>
+    </head>
+    <body>
+        <h1>🚀 Bienvenue sur mon site vitrine !</h1>
+        <p>Ce site est hébergé de façon ultra-légère avec Nginx sur OpenShift.</p>
+        <p>Aucune base de données, juste de la performance pure !</p>
+    </body>
+    </html>
 
-    app.get('/', (req, res) => {
-        res.send(`
-            <h1>🚀 Félicitations ! L'application fonctionne !</h1>
-            <p>La configuration est enfin passée ! Le serveur Node.js est bien caché derrière Nginx.</p>
-        `);
-    });
-
-    app.listen(port, () => {
-        console.log(`Serveur Node.js démarré sur le port ${port}`);
-    });
-
-  # 2. La configuration Nginx (qui écoute sur 8080)
-  nginx.conf: |
+  # 2. La configuration Nginx simplifiée
+  my_server.conf: |
     server {
         listen 8080;
         server_name localhost;
 
         location / {
-            proxy_pass http://localhost:3000;
-            proxy_http_version 1.1;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
+            root /app;
+            index index.html;
         }
     }
