@@ -19,14 +19,23 @@ spec:
           ports:
             - containerPort: 8080
           volumeMounts:
-            # CORRECTIF : On monte tout le volume directement sur le dossier /app
-            - name: web-content
+            # On monte uniquement le volume HTML dans /app
+            - name: html-volume
               mountPath: /app
-            # On laisse le fichier de configuration Nginx à sa place
-            - name: web-content
-              mountPath: /opt/bitnami/nginx/conf/server_blocks/my_server.conf
-              subPath: my_server.conf
+            # On monte uniquement le volume de config dans le dossier server_blocks
+            - name: config-volume
+              mountPath: /opt/bitnami/nginx/conf/server_blocks
       volumes:
-        - name: web-content
+        # On découpe le ConfigMap en deux volumes virtuels propres
+        - name: html-volume
           configMap:
             name: nginx-config
+            items:
+              - key: index.html
+                path: index.html
+        - name: config-volume
+          configMap:
+            name: nginx-config
+            items:
+              - key: my_server.conf
+                path: my_server.conf
