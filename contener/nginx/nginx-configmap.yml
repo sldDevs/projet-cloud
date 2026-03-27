@@ -4,7 +4,7 @@ metadata:
   name: nginx-config
   namespace: saliou-diop-dev
 data:
-  # 1. Le code de ton application Node.js (qui va se connecter à la DB)
+  # 1. Le code de ton application Node.js
   app.js: |
     const express = require('express');
     const mysql = require('mysql2');
@@ -14,8 +14,7 @@ data:
     app.get('/', (req, res) => {
         res.send(`
             <h1>🚀 Félicitations ! L'application fonctionne !</h1>
-            <p>L'application Node.js est bien cachée derrière Nginx.</p>
-            <p>La base de données cible est : <strong>${process.env.DB_HOST}</strong></p>
+            <p>La configuration est enfin passée ! Le serveur Node.js est bien caché derrière Nginx.</p>
         `);
     });
 
@@ -23,7 +22,7 @@ data:
         console.log(`Serveur Node.js démarré sur le port ${port}`);
     });
 
-  # 2. La configuration Nginx (qui écoute sur 8080 et renvoie vers Node.js sur 3000)
+  # 2. La configuration Nginx (qui écoute sur 8080)
   nginx.conf: |
     server {
         listen 8080;
