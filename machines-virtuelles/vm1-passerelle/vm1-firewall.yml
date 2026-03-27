@@ -1,23 +1,28 @@
+# 1ère PARTIE : On force la création explicite du disque dur
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: image-fedora-firewall
+  namespace: saliou-diop-dev
+spec:
+  sourceRef:
+    kind: DataSource
+    name: fedora
+    namespace: openshift-virtualization-os-images
+  storage:
+    resources:
+      requests:
+        storage: 5Gi
+
+---
+# 2ème PARTIE : On crée la machine et on l'allume automatiquement
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   name: vm1-firewall
   namespace: saliou-diop-dev
 spec:
-  runStrategy: Manual
-  dataVolumeTemplates:
-    - metadata:
-        name: image-fedora-firewall
-      spec:
-        sourceRef:
-          kind: DataSource
-          name: fedora
-          namespace: openshift-virtualization-os-images
-        storage:
-          resources:
-            requests:
-              # On garde 5Gi pour ne pas exploser ton quota Sandbox
-              storage: 5Gi 
+  running: true # <-- La machine démarrera toute seule !
   template:
     metadata:
       labels:
@@ -44,7 +49,6 @@ spec:
         - name: default
           pod: {}
       tolerations:
-        # Cette règle est souvent obligatoire sur OpenShift Sandbox
         - effect: NoSchedule
           key: sandbox-cnv
           operator: Exists
