@@ -43,4 +43,4 @@ jobs:
 
       - name: 🌍 Déploiement Nginx et Config
         run: |
-          oc apply -f conteneur/nginx/deployment.yaml -n ${{ env.NAMESPACE }}
+          oc apply -f contener/nginx/deployment.yaml -n ${{ env.NAMESPACE }}
