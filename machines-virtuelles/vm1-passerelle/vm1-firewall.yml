@@ -22,7 +22,7 @@ metadata:
   name: vm1-firewall
   namespace: saliou-diop-dev
 spec:
-  running: true # <-- La machine démarrera toute seule !
+  runStrategy: Always # <-- La machine démarrera toute seule !
   template:
     metadata:
       labels:
