@@ -22,7 +22,7 @@ metadata:
   name: vm1-firewall
   namespace: saliou-diop-dev
 spec:
-  runStrategy: Always # <-- La machine démarrera toute seule !
+  runStrategy: Always # <-- La solution moderne d'OpenShift !
   template:
     metadata:
       labels:
