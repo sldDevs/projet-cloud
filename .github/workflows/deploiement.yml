@@ -23,5 +23,5 @@ jobs:
         run: oc apply -f conteneur/
       - name: Déploiement VM1 (Passerelle/Firewall)
         run: oc apply -f machines-virtuelles/vm1-passerelle/
-      - name: Déploiement VM2 (Base de données)
-        run: oc apply -f machines-virtuelles/vm2-serveur-bdd/
+     # - name: Déploiement VM2 (Base de données)
+      #  run: oc apply -f machines-virtuelles/vm2-serveur-bdd/
